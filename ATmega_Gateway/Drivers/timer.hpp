@@ -6,7 +6,8 @@
 #include <avr/interrupt.h>
 #include "project_defines.hpp"
 
-enum TimerStatus : int32_t
+// Folosim enum class (Strongly Typed Enum)
+enum class TimerStatus : int32_t
 {
 	TIMER_OK = 0,
 	INVALID_TIMER = -1,
@@ -18,15 +19,20 @@ enum TimerStatus : int32_t
 class Timer
 {
 	public:
-	Timer(); 
-	Timer(uint32_t interval); 
+	Timer();
+	Timer(uint32_t interval);
+	
 	void SetInterval(uint32_t interval);
 	uint32_t GetInterval() const;
+	
 	void SetElapsed(uint32_t elapsed);
 	uint32_t GetElapsed() const;
+	
 	void SetRunning(bool state);
 	bool IsRunning() const;
+	
 	bool HasElapsed();
+
 	private:
 	uint32_t intervalMs;
 	uint32_t elapsedMs;
@@ -37,8 +43,10 @@ class TimerDriver
 {
 	public:
 	TimerDriver();
+	~TimerDriver();
 
 	int8_t CreateTimer(uint32_t intervalMs);
+	
 	TimerStatus AttachCallback(uint8_t timerId, void (*callback)());
 	TimerStatus DetachCallback(uint8_t timerId);
 
@@ -46,13 +54,15 @@ class TimerDriver
 	TimerStatus StopTimer(uint8_t timerId);
 
 	void Run();
-
 	uint32_t GetSystemSeconds() const;
-	
+	void IncrementTicks();
+
+	static TimerDriver* isr_instance;
+
 	private:
 	Timer timers[TIMER_MAX_COUNT];
-	void (*callbacks[TIMER_MAX_COUNT])() = {nullptr};
+	void (*callbacks[TIMER_MAX_COUNT])();
+	volatile uint32_t systemTicks;
 };
- extern TimerDriver timerDriver;
 
-#endif 
+#endif

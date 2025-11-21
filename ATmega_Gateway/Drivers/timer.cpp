@@ -3,23 +3,24 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
-
-static volatile uint32_t g_systemTicks = 0;
-TimerDriver timerDriver;
-
+TimerDriver* TimerDriver::isr_instance = nullptr;
 
 ISR(TIMER2_COMPA_vect)
 {
-	g_systemTicks++;
+	if (TimerDriver::isr_instance != nullptr)
+	{
+		TimerDriver::isr_instance->IncrementTicks();
+	}
 }
 
-
-Timer::Timer(){}
-Timer::Timer(uint32_t interval)
+Timer::Timer()
+: intervalMs(0), elapsedMs(0), running(false)
 {
-	intervalMs = interval;
-	elapsedMs = 0;
-	running = false;
+}
+
+Timer::Timer(uint32_t interval)
+: intervalMs(interval), elapsedMs(0), running(false)
+{
 }
 
 void Timer::SetInterval(uint32_t interval)
@@ -62,40 +63,49 @@ bool Timer::HasElapsed()
 	return false;
 }
 
-
-uint32_t TimerDriver::GetSystemSeconds() const
-{
-	uint32_t ticks;
-	
-	uint8_t sreg = SREG;
-	cli();
-	ticks = g_systemTicks;
-	SREG = sreg;
-	
-	return ticks / 1000;
-}
-
 TimerDriver::TimerDriver()
+: systemTicks(0)
 {
-	
+	isr_instance = this;
+
 	for (uint8_t i = 0; i < TIMER_MAX_COUNT; i++)
 	{
 		callbacks[i] = nullptr;
 	}
 
-	
-	OCR2A = 249; 
-	TCCR2A = (1 << WGM21); 
-	TCCR2B = (1 << CS21) | (1 << CS20); 
-	TIMSK2 = (1 << OCIE2A); 
-	sei(); 
+	OCR2A = 249;
+	TCCR2A = (1 << WGM21);
+	TCCR2B = (1 << CS21) | (1 << CS20);
+	TIMSK2 = (1 << OCIE2A);
+	sei();
+}
+
+TimerDriver::~TimerDriver()
+{
+	isr_instance = nullptr;
+}
+
+void TimerDriver::IncrementTicks()
+{
+	systemTicks++;
+}
+
+uint32_t TimerDriver::GetSystemSeconds() const
+{
+	uint32_t ticks;
+	uint8_t sreg = SREG;
+	cli();
+	ticks = systemTicks;
+	SREG = sreg;
+
+	return ticks / 1000;
 }
 
 int8_t TimerDriver::CreateTimer(uint32_t intervalMs)
 {
 	for (uint8_t i = 0; i < TIMER_MAX_COUNT; i++)
 	{
-		if (timers[i].GetInterval() == 0) 
+		if (timers[i].GetInterval() == 0)
 		{
 			timers[i].SetInterval(intervalMs);
 			timers[i].SetElapsed(0);
@@ -109,64 +119,63 @@ TimerStatus TimerDriver::AttachCallback(uint8_t timerId, void (*callback)())
 {
 	if (timerId >= TIMER_MAX_COUNT)
 	{
-		return INVALID_TIMER;
+		return TimerStatus::INVALID_TIMER;
 	}
 	if (callback == nullptr)
 	{
-		return NULL_CALLBACK;
+		return TimerStatus::NULL_CALLBACK;
 	}
 	callbacks[timerId] = callback;
-	return TIMER_OK;
+	return TimerStatus::TIMER_OK;
 }
 
 TimerStatus TimerDriver::DetachCallback(uint8_t timerId)
 {
 	if (timerId >= TIMER_MAX_COUNT)
 	{
-		return INVALID_TIMER;
+		return TimerStatus::INVALID_TIMER;
 	}
 	callbacks[timerId] = nullptr;
-	return TIMER_OK;
+	return TimerStatus::TIMER_OK;
 }
 
 TimerStatus TimerDriver::StartTimer(uint8_t timerId)
 {
 	if (timerId >= TIMER_MAX_COUNT)
 	{
-		return INVALID_TIMER;
+		return TimerStatus::INVALID_TIMER;
 	}
 	if (timers[timerId].IsRunning())
 	{
-		return TIMER_ALREADY_RUNNING;
+		return TimerStatus::TIMER_ALREADY_RUNNING;
 	}
 	timers[timerId].SetRunning(true);
 	timers[timerId].SetElapsed(0);
-	return TIMER_OK;
+	return TimerStatus::TIMER_OK;
 }
 
 TimerStatus TimerDriver::StopTimer(uint8_t timerId)
 {
 	if (timerId >= TIMER_MAX_COUNT)
 	{
-		return INVALID_TIMER;
+		return TimerStatus::INVALID_TIMER;
 	}
 	if (!timers[timerId].IsRunning())
 	{
-		return TIMER_NOT_RUNNING;
+		return TimerStatus::TIMER_NOT_RUNNING;
 	}
 	timers[timerId].SetRunning(false);
-	return TIMER_OK;
+	return TimerStatus::TIMER_OK;
 }
 
 void TimerDriver::Run()
 {
 	static uint32_t lastTick = 0;
-
 	uint32_t currentTicks = 0;
 
 	uint8_t sreg = SREG;
 	cli();
-	currentTicks = g_systemTicks;
+	currentTicks = systemTicks;
 	SREG = sreg;
 
 	if (currentTicks != lastTick)
@@ -180,9 +189,12 @@ void TimerDriver::Run()
 			{
 				timers[i].SetElapsed(timers[i].GetElapsed() + diff);
 
-				if (timers[i].HasElapsed() && callbacks[i] != nullptr)
+				if (timers[i].HasElapsed())
 				{
-					callbacks[i]();
+					if (callbacks[i] != nullptr)
+					{
+						callbacks[i]();
+					}
 				}
 			}
 		}

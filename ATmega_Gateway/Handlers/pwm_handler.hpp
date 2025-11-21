@@ -1,17 +1,17 @@
 #pragma once
 
 #include "iendpoint_handler.hpp"
-#include "icomm_channel.hpp"
+#include "i_communication_channel.hpp"
 #include "pwm.hpp"
 
 class PwmHandler : public IEndpointHandler
 {
 	public:
-	PwmHandler(ICommChannel& comm);
-	bool Handle(const char* method, const char* path) override;
+	PwmHandler(ICommunicationChannel& comm, PwmDriver& pwmDriver);
+	bool Handle(const char* method, const char* uri) override;
 
 	private:
 	void SendOK();
-	ICommChannel& comm_;
-	PwmDriver& pwm_;
+	ICommunicationChannel& comm_;
+	PwmDriver& pwmDriver_;
 };
