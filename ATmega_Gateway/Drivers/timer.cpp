@@ -1,6 +1,6 @@
 #include "timer.hpp"
 #include "project_defines.hpp"
-#include <avr/interrupt.h>
+#include "interrupts.hpp"
 #include <avr/io.h>
 
 TimerDriver* TimerDriver::isr_instance = nullptr;
@@ -77,7 +77,7 @@ TimerDriver::TimerDriver()
 	TCCR2A = (1 << WGM21);
 	TCCR2B = (1 << CS21) | (1 << CS20);
 	TIMSK2 = (1 << OCIE2A);
-	sei();
+	Interrupts::Enable();
 }
 
 TimerDriver::~TimerDriver()
@@ -94,7 +94,7 @@ uint32_t TimerDriver::GetSystemSeconds() const
 {
 	uint32_t ticks;
 	uint8_t sreg = SREG;
-	cli();
+	Interrupts::Disable();
 	ticks = systemTicks;
 	SREG = sreg;
 
@@ -174,7 +174,7 @@ void TimerDriver::Run()
 	uint32_t currentTicks = 0;
 
 	uint8_t sreg = SREG;
-	cli();
+	Interrupts::Disable();
 	currentTicks = systemTicks;
 	SREG = sreg;
 

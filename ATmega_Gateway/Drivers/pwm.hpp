@@ -6,16 +6,16 @@
 
 class PwmDriver
 {
-	public: // <-- ACUM E PUBLIC
-	PwmDriver();
-	~PwmDriver();
+	public:
+		PwmDriver();
+		~PwmDriver();
 
-	void Init();
-	void SetDutyCycle(uint8_t channel, uint8_t duty);
+		void Init();
+		void SetDutyCycle(uint8_t channel, uint8_t duty);
 
 	private:
-	PwmDriver(const PwmDriver&) = delete;
-	PwmDriver& operator=(const PwmDriver&) = delete;
+		PwmDriver(const PwmDriver&) = delete;
+		PwmDriver& operator=(const PwmDriver&) = delete;
 };
 
 #endif

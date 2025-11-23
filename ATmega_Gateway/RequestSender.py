@@ -1,76 +1,112 @@
 import serial
+import serial.tools.list_ports
 import time
 import socket
+import sys
 
 # --- CONFIGURARE ---
-SERIAL_PORT = 'COM4'       # <--- Verifică portul!
-BAUD_RATE = 9600
-AUTHORIZED_HOST = "Siemens-Console" # Parola de securitate
+BAUD_RATE = 38400 
+AUTHORIZED_HOST = "Admin"
 # -------------------
 
+def print_banner():
+    print(r"""
+   _____           _      _       _    
+  / ____|         | |    (_)     | |   
+ | (___  _   _ ___| |     _ _ __ | | __
+  \___ \| | | / __| |    | | '_ \| |/ /
+  ____) | |_| \__ \ |____| | | | |   < 
+ |_____/ \__, |___/______|_|_| |_|_|\_\
+          __/ |                        
+         |___/                         
+      [ SysLink Console v1.0 ]
+      [ Industrial IoT Gateway ]
+    """)
+
 def print_help():
-    print("\n=== CLI COMMAND TEMPLATES ===")
-    print(" 1. PWM Control:      POST /pwm/set/<channel>/<duty>")
-    print("                      (channel: 0=D6, 1=D5 | duty: 0-255)")
-    print(" 2. GPIO Toggle:      POST /gpio/toggle/<port>/<pin>")
-    print(" 3. GPIO Set Level:   POST /gpio/set/<port>/<pin>/<level>")
-    print("                      (level: high/low)")
-    print(" 4. ADC Read:         GET /adc/read/<channel>")
-    print(" 5. System Info:      GET /timer/elapsed")
-    print(" 6. Security Pair:    pair  (sau POST /admin/pair)")
-    print(" 7. Local Commands:   help, exit")
-    print("=============================\n")
+    print("\n=== AVAILABLE COMMANDS ===")
+    print(" [PWM]    POST /pwm/set/<channel>/<duty>   (ch: 0-1, duty: 0-255)")
+    print(" [GPIO]   POST /gpio/toggle/<port>/<pin>   (ex: B/5)")
+    print(" [GPIO]   POST /gpio/set/<port>/<pin>/<lv> (lv: high/low)")
+    print(" [ADC]    GET /adc/read/<channel>          (ch: 0-7)")
+    print(" [SYS]    GET /status                      (Full System Report)")
+    print(" [SYS]    GET /msg                         (Check Functionality)")
+    print(" [CLI]    help, exit, clear")
+    print("==========================\n")
 
-try:
-    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-except Exception as e:
-    print(f"Error opening serial port: {e}")
-    exit()
-
-time.sleep(2) # Așteptăm resetarea Arduino
-
-my_pc_name = socket.gethostname()
-print(f"\n[CONNECTED] Client: '{my_pc_name}' -> Authorized as: '{AUTHORIZED_HOST}'")
-print_help()
-
-while True:
-    cmd = input("Cmd > ").strip()
+def select_port():
+    print("Scanning for serial ports...")
+    ports = list(serial.tools.list_ports.comports())
     
-    if cmd.lower() == "exit":
-        break
-    
-    if cmd.lower() == "help":
-        print_help()
-        continue
-    
-    # Shortcut pentru pairing (ca să nu scrii tot URL-ul lung)
-    if cmd.lower() == "pair":
-        final_cmd = "POST /admin/pair"
-    else:
-        final_cmd = cmd
-
-    # Construim request-ul HTTP/1.1 Industrial
-    # Adăugăm automat Header-ul de Securitate Host
-    request = f"{final_cmd} HTTP/1.1\r\nHost: {AUTHORIZED_HOST}\r\n\r\n"
-
-    try:
-        # Trimitem
-        # print(f"[TX] {final_cmd}...") # Uncomment pentru debug
-        ser.write(request.encode())
-
-        # Citim răspunsul
-        response = ""
-        while True:
-            line = ser.readline().decode('utf-8', errors='ignore')
-            if not line: break
-            response += line
+    if not ports:
+        print("[!] No serial ports found. Check connection.")
+        input("Press Enter to exit...")
+        sys.exit()
         
-        # Afișăm doar body-ul răspunsului sau tot, depinde cum preferi.
-        # Aici afișăm tot răspunsul brut de la server.
-        print(f"\n{response.strip()}\n")
+    for i, p in enumerate(ports):
+        print(f"  {i+1}. {p.device} - {p.description}")
+    
+    if len(ports) == 1:
+        print(f"[+] Auto-selected: {ports[0].device}")
+        return ports[0].device
+        
+    while True:
+        try:
+            selection = input("\nSelect port (number): ").strip()
+            idx = int(selection) - 1
+            if 0 <= idx < len(ports):
+                return ports[idx].device
+        except:
+            pass
+        print("Invalid selection.")
+
+def main():
+    print_banner()
+    port_name = select_port()
+    
+    try:
+        print(f"[...] Connecting to {port_name} at {BAUD_RATE} baud...")
+        ser = serial.Serial(port_name, BAUD_RATE, timeout=1)
+        time.sleep(2)
+        print("[+] CONNECTION ESTABLISHED")
+        print(f"[i] Authorized Security Host: '{AUTHORIZED_HOST}'")
+        print("[i] Type 'help' for command list.\n")
         
     except Exception as e:
-        print(f"Communication Error: {e}")
-        break
+        print(f"\n[!] Connection Failed: {e}")
+        input("Press Enter to exit...")
+        sys.exit()
 
-ser.close()
+    while True:
+        try:
+            cmd = input("SysLink > ").strip()
+            
+            if not cmd: continue
+            
+            if cmd.lower() == "exit": break
+            if cmd.lower() == "help": print_help(); continue
+            if cmd.lower() == "clear": print("\n" * 50); continue
+
+            request = f"{cmd} HTTP/1.1\r\nHost: {AUTHORIZED_HOST}\r\n\r\n"
+            
+            ser.write(request.encode())
+            
+            response = ""
+            while True:
+                line = ser.readline().decode('utf-8', errors='ignore')
+                if not line: break
+                response += line
+            
+            print(f"\n{response.strip()}\n")
+            
+        except serial.SerialException:
+            print("\n[!] Device disconnected.")
+            break
+        except KeyboardInterrupt:
+            break
+
+    ser.close()
+    print("[*] Session closed.")
+
+if __name__ == "__main__":
+    main()

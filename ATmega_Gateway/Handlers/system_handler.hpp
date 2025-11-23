@@ -4,16 +4,15 @@
 #include "i_communication_channel.hpp"
 #include "timer.hpp"
 
-class TimerHandler : public IEndpointHandler
+class SystemHandler : public IEndpointHandler
 {
 	public:
-		TimerHandler(ICommunicationChannel& comm, TimerDriver& timerDriver);
-
+		SystemHandler(ICommunicationChannel& comm, TimerDriver& timerDriver);
 		bool Handle(const char* method, const char* uri) override;
 
 	private:
 		void SendResponse(const char* code, const char* contentType, const char* body);
-
+	
 		ICommunicationChannel& comm_;
 		TimerDriver& timerDriver_;
 };

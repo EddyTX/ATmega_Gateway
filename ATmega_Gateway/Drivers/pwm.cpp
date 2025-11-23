@@ -1,6 +1,5 @@
 #include "pwm.hpp"
 
-// --- IMPLEMENT?RILE LIPSA ---
 PwmDriver::PwmDriver()
 {
 }
@@ -8,11 +7,11 @@ PwmDriver::PwmDriver()
 PwmDriver::~PwmDriver()
 {
 }
-// ---------------------------
+
 
 void PwmDriver::Init()
 {
-	// PD6 si PD5 ca output
+	// PD6 & PD5 output
 	DDRD |= (1 << DDD6) | (1 << DDD5);
 
 	// Fast PWM

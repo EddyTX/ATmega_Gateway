@@ -1,6 +1,6 @@
 #include "uart.hpp"
 #include "project_defines.hpp"
-#include <avr/interrupt.h>
+#include "interrupts.hpp"
 
 UartDriver* UartDriver::isr_instance = nullptr;
 
@@ -38,7 +38,7 @@ void UartDriver::SendChar(char c)
 bool UartDriver::ReadChar(char& c)
 {
 	uint8_t sreg_backup = SREG;
-	cli();
+	Interrupts::Disable();
 	if (head == tail)
 	{
 		SREG = sreg_backup;

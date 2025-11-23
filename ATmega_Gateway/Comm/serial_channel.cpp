@@ -7,7 +7,10 @@ SerialChannel::SerialChannel(UartDriver& uartDriver)
 
 void SerialChannel::SendData(const uint8_t* data, size_t size)
 {
-	if (data == nullptr || size == 0) return;
+	if (data == nullptr || size == 0) 
+	{
+		return;
+	}
 
 	for (size_t i = 0; i < size; ++i)
 	{

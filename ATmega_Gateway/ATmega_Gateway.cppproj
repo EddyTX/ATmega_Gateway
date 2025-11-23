@@ -139,7 +139,6 @@
           </ListValues>
         </avrgcccpp.compiler.directories.IncludePaths>
         <avrgcccpp.compiler.optimization.level>Optimize debugging experience (-Og)</avrgcccpp.compiler.optimization.level>
-        <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
         <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
         <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
         <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
@@ -189,6 +188,9 @@
     <Compile Include="Drivers\gpio.hpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Drivers\interrupts.hpp">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Drivers\pwm.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -226,6 +228,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Handlers\pwm_handler.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Handlers\system_handler.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Handlers\system_handler.hpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Handlers\timer_handler.cpp">

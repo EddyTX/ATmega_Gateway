@@ -1,7 +1,6 @@
 #include "adc.hpp"
 #include "project_defines.hpp"
 
-// --- IMPLEMENT?RILE LIPSA ---
 AdcDriver::AdcDriver()
 {
 }
@@ -9,7 +8,7 @@ AdcDriver::AdcDriver()
 AdcDriver::~AdcDriver()
 {
 }
-// ---------------------------
+
 
 void AdcDriver::Init()
 {

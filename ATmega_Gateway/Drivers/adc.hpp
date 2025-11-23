@@ -6,16 +6,16 @@
 
 class AdcDriver
 {
-	public: // <-- ACUM E PUBLIC
-	AdcDriver();
-	~AdcDriver();
+	public:
+		AdcDriver();
+		~AdcDriver();
 
-	void Init();
-	uint16_t Read(uint8_t channel);
+		void Init();
+		uint16_t Read(uint8_t channel);
 
 	private:
-	AdcDriver(const AdcDriver&) = delete;
-	AdcDriver& operator=(const AdcDriver&) = delete;
+		AdcDriver(const AdcDriver&) = delete;
+		AdcDriver& operator=(const AdcDriver&) = delete;
 };
 
 #endif

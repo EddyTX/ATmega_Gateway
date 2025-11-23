@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-HttpServer::HttpServer(ICommunicationChannel& comm)
-: comm_(comm), handlerCount_(0)
+HttpServer::HttpServer(ICommunicationChannel& comm) : comm_(comm), handlerCount_(0)
 {
 }
 

@@ -7,11 +7,11 @@
 class PwmHandler : public IEndpointHandler
 {
 	public:
-	PwmHandler(ICommunicationChannel& comm, PwmDriver& pwmDriver);
-	bool Handle(const char* method, const char* uri) override;
+		PwmHandler(ICommunicationChannel& comm, PwmDriver& pwmDriver);
+		bool Handle(const char* method, const char* uri) override;
 
 	private:
-	void SendOK();
-	ICommunicationChannel& comm_;
-	PwmDriver& pwmDriver_;
+		void SendOK();
+		ICommunicationChannel& comm_;
+		PwmDriver& pwmDriver_;
 };

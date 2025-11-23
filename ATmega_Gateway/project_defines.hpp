@@ -7,7 +7,7 @@
 #define SYSTEM_TICK_MS 1UL
 #define TIMER_MAX_COUNT 3
 
-#define UART_BAUD_RATE 9600
+#define UART_BAUD_RATE 38400
 #define UART_RX_BUFFER_SIZE 128
 #define UART_TX_BUFFER_SIZE 128
 #define UART_SAFETY_LOOP_LIMIT 256
@@ -18,7 +18,7 @@
 #define HTTP_HEADER_END_LEN 4
 
 #define MAX_HANDLERS 5
-#define ALLOWED_HOST "Siemens-Console"
+#define ALLOWED_HOST "Admin"
 
 #define ADC_CHANNEL_MASK 0x07
 #define ADC_MUX_MASK 0xF0
@@ -28,4 +28,5 @@
 #define STR_LEN_ADC_PATH 10
 #define STR_LEN_GPIO_TOGGLE 13
 #define STR_LEN_GPIO_SET 10
+#define STR_LEN_GPIO_GET 10
 #define STR_LEN_PWM_SET 9

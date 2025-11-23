@@ -4,13 +4,13 @@
 #include <stdint.h>
 #include <avr/io.h>
 
-enum class PinDirection : uint8_t
+enum PinDirection : uint8_t
 {
 	INPUT = 0,
 	OUTPUT = 1
 };
 
-enum class PinLevel : uint8_t
+enum PinLevel : uint8_t
 {
 	LOW = 0,
 	HIGH = 1
@@ -19,17 +19,17 @@ enum class PinLevel : uint8_t
 class GpioDriver
 {
 	public:
-	GpioDriver();  // <-- TREBUIE DECLARAT AICI
-	~GpioDriver(); // <-- TREBUIE DECLARAT AICI
+		GpioDriver();
+		~GpioDriver();
 
-	void SetPinDirection(volatile uint8_t* ddr, uint8_t pin, PinDirection direction);
-	void SetPinLevel(volatile uint8_t* port, uint8_t pin, PinLevel level);
-	void TogglePin(volatile uint8_t* port, uint8_t pin);
-	PinLevel ReadPin(volatile uint8_t* pinReg, uint8_t pin);
+		void SetPinDirection(volatile uint8_t* ddr, uint8_t pin, PinDirection direction);
+		void SetPinLevel(volatile uint8_t* port, uint8_t pin, PinLevel level);
+		void TogglePin(volatile uint8_t* port, uint8_t pin);
+		PinLevel ReadPin(volatile uint8_t* pinReg, uint8_t pin);
 
 	private:
-	GpioDriver(const GpioDriver&) = delete;
-	GpioDriver& operator=(const GpioDriver&) = delete;
+		GpioDriver(const GpioDriver&) = delete;
+		GpioDriver& operator=(const GpioDriver&) = delete;
 };
 
 #endif
